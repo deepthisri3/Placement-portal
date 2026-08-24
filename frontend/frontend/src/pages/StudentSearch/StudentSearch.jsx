@@ -1,145 +1,79 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import api from "../../services/api";
 import AppShell from "../../components/AppShell/AppShell.jsx";
 import "./StudentSearch.css";
 
 /**
- * StudentSearch (admin / super_admin) — redesign: styling only.
+ * StudentSearch (admin / super_admin)
+ * Type-ahead search -> select a student -> navigate to their full profile.
  */
 export default function StudentSearch() {
-  const [reg, setReg] = useState("");
-  const [profile, setProfile] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-  const [resumeBusy, setResumeBusy] = useState(false);
+  const navigate = useNavigate();
+  const [q, setQ] = useState("");
+  const [results, setResults] = useState([]);
+  const [open, setOpen] = useState(false);
+  const [searching, setSearching] = useState(false);
+  const boxRef = useRef(null);
 
-  async function search() {
-    const q = reg.trim();
-    if (!q) return;
-    setLoading(true); setError(""); setProfile(null);
-    try {
-      const res = await api.get(`/students/by-register/${encodeURIComponent(q)}/profile`);
-      setProfile(res.data);
-    } catch (err) {
-      setError(err?.response?.data?.detail || "Student not found.");
-    } finally {
-      setLoading(false);
-    }
-  }
+  useEffect(() => {
+    const term = q.trim();
+    if (!term) { setResults([]); return; }
+    setSearching(true);
+    const t = setTimeout(async () => {
+      try {
+        const res = await api.get("/students/search", { params: { q: term } });
+        setResults(res.data || []);
+        setOpen(true);
+      } catch {
+        setResults([]);
+      } finally {
+        setSearching(false);
+      }
+    }, 250);
+    return () => clearTimeout(t);
+  }, [q]);
 
-  async function openResume() {
-    if (!profile) return;
-    try {
-      const res = await api.get(`/students/${profile.id}/resume/view`, { responseType: "blob" });
-      const url = window.URL.createObjectURL(new Blob([res.data], { type: "application/pdf" }));
-      window.open(url, "_blank", "noopener");
-      setTimeout(() => window.URL.revokeObjectURL(url), 10000);
-    } catch (err) {
-      alert(err?.response?.data?.detail || "Could not open resume.");
+  useEffect(() => {
+    function onOutside(e) {
+      if (boxRef.current && !boxRef.current.contains(e.target)) setOpen(false);
     }
-  }
+    document.addEventListener("mousedown", onOutside);
+    return () => document.removeEventListener("mousedown", onOutside);
+  }, []);
 
-  async function downloadResume() {
-    if (!profile) return;
-    setResumeBusy(true);
-    try {
-      const res = await api.get(`/students/${profile.id}/resume/download`, { responseType: "blob" });
-      const url = window.URL.createObjectURL(new Blob([res.data]));
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `${profile.register_number}-RESUME.pdf`;
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      window.URL.revokeObjectURL(url);
-    } catch (err) {
-      alert(err?.response?.data?.detail || "Could not download resume.");
-    } finally {
-      setResumeBusy(false);
-    }
+  function onPick(s) {
+    navigate(`/admin/student/${encodeURIComponent(s.register_number)}`);
   }
 
   return (
     <AppShell title="Student Search">
-      <div className="ss-search">
+      <div ref={boxRef} className="ss-search-box">
         <input
           className="input ss-input"
-          placeholder="Enter register number (e.g. 24B01A1286)"
-          value={reg}
-          onChange={(e) => setReg(e.target.value)}
-          onKeyDown={(e) => e.key === "Enter" && search()}
+          placeholder="Search by name, register no, email, phone, CGPA, or company…"
+          value={q}
+          onChange={(e) => setQ(e.target.value)}
+          onFocus={() => results.length && setOpen(true)}
         />
-        <button className="btn btn-primary" onClick={search} disabled={loading || !reg.trim()}>
-          {loading ? "Searching…" : "Search"}
-        </button>
+        {open && (
+          <div className="ss-dropdown">
+            {searching && <div className="ss-drop-muted">Searching…</div>}
+            {!searching && results.length === 0 && <div className="ss-drop-muted">No matches</div>}
+            {!searching && results.map((s) => (
+              <div key={s.id} className="ss-drop-item" onClick={() => onPick(s)}
+                   onMouseDown={(e) => e.preventDefault()}>
+                <div className="ss-drop-name">{s.full_name || "—"}</div>
+                <div className="ss-drop-meta">
+                  {s.register_number}{s.branch ? ` · ${s.branch}` : ""}{s.cgpa != null ? ` · CGPA ${s.cgpa}` : ""}
+                  {s.email ? ` · ${s.email}` : ""}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
-
-      {error && <p className="alert alert-error">{error}</p>}
-
-      {profile && (
-        <div className="card ss-card">
-          <div className="ss-head">
-            <div>
-              <h2 className="ss-name">{profile.full_name}</h2>
-              <div className="ss-reg">{profile.register_number}</div>
-            </div>
-            <div className="ss-resume-btns">
-              {profile.has_resume ? (
-                <>
-                  <button className="btn btn-ghost" onClick={openResume}>Open Resume</button>
-                  <button className="btn btn-primary" disabled={resumeBusy} onClick={downloadResume}>
-                    {resumeBusy ? "…" : "Download Resume"}
-                  </button>
-                </>
-              ) : (
-                <span className="subtle">No resume uploaded</span>
-              )}
-            </div>
-          </div>
-
-          <div className="ss-grid">
-            <Field label="Branch" value={profile.branch} />
-            <Field label="Email" value={profile.email} />
-            <Field label="Phone" value={profile.phone} />
-            <Field label="CGPA" value={profile.cgpa != null ? profile.cgpa : "—"} />
-          </div>
-
-          <div className="ss-section">
-            <div className="ss-section-label">Skills</div>
-            <div>{profile.skills || <span className="subtle">—</span>}</div>
-          </div>
-
-          <div className="ss-section">
-            <div className="ss-section-label">Applications ({profile.applications.length})</div>
-            {profile.applications.length === 0 ? (
-              <span className="subtle">No applications yet.</span>
-            ) : (
-              <table className="table">
-                <thead>
-                  <tr><th>Type</th><th>Opportunity</th></tr>
-                </thead>
-                <tbody>
-                  {profile.applications.map((a, i) => (
-                    <tr key={i}>
-                      <td>{a.opportunity_type === "on_campus" ? "On-campus" : "Off-campus"}</td>
-                      <td>{a.company_or_title || `#${a.opportunity_id}`}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            )}
-          </div>
-        </div>
-      )}
+      <p className="muted" style={{ marginTop: 16 }}>Start typing to find a student, then click a result to open their full profile.</p>
     </AppShell>
-  );
-}
-
-function Field({ label, value }) {
-  return (
-    <div>
-      <div className="ss-field-label">{label}</div>
-      <div className="ss-field-value">{value != null && value !== "" ? value : "—"}</div>
-    </div>
   );
 }

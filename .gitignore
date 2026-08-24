@@ -1,0 +1,59 @@
+# ── Python / FastAPI ──────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+*.egg
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# Virtual environment
+.venv/
+venv/
+env/
+ENV/
+
+# Environment variables (NEVER commit these)
+.env
+.env.*
+!.env.example
+
+# ── Node / React / Vite ───────────────────────────────────────────
+node_modules/
+dist/
+.vite/
+
+# ── Database ──────────────────────────────────────────────────────
+*.db
+*.sqlite
+*.sqlite3
+
+# ── Uploads / user files ──────────────────────────────────────────
+backend/uploads/
+backend/static/uploads/
+*.pdf
+*.xlsx
+*.csv
+
+# ── IDE / Editor ──────────────────────────────────────────────────
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# ── Logs ──────────────────────────────────────────────────────────
+*.log
+logs/
+
+# ── pytest / coverage ─────────────────────────────────────────────
+.pytest_cache/
+.coverage
+htmlcov/
+
+# ── Alembic (keep versions, ignore temp) ──────────────────────────
+alembic/versions/__pycache__/

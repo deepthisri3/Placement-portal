@@ -1,96 +1,173 @@
+/* ═══════════════════════════════════════════════════════════════════════
+   LoginChoice — the entry point
+   Two large interactive option cards, clean and decisive.
+   ═══════════════════════════════════════════════════════════════════════ */
+
 .choice-page {
   min-height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: var(--space-5);
-  background:
-    radial-gradient(1200px 600px at 50% -20%, rgba(59,130,246,0.10), transparent 60%),
-    var(--bg);
+  padding: var(--sp-5);
+  background: var(--bg);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Subtle ambient gradient */
+.choice-page::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 50%;
+  background: radial-gradient(ellipse 80% 40% at 50% 0%, rgba(59,126,248,0.07), transparent);
+  pointer-events: none;
 }
 
 .choice-card {
+  position: relative;
+  z-index: 1;
   width: 100%;
   max-width: 420px;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  padding: var(--space-6);
-  box-shadow: var(--shadow-lg);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
 }
 
+/* Brand */
 .choice-brand {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 10px;
-  margin-bottom: var(--space-6);
+  gap: var(--sp-3);
+  margin-bottom: var(--sp-7);
 }
 
 .choice-logo {
-  width: 34px;
-  height: 34px;
-  border-radius: var(--radius);
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-md);
   background: var(--accent);
-  color: var(--on-accent);
+  color: #fff;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-weight: 700;
-  font-size: 14px;
-  letter-spacing: -0.02em;
+  font-weight: 800;
+  font-size: 16px;
+  letter-spacing: -0.04em;
+  box-shadow: 0 4px 16px rgba(59,126,248,.4);
 }
 
 .choice-eyebrow {
-  font-size: 13px;
-  font-weight: 500;
-  color: var(--text-muted);
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text-subtle);
 }
 
-.choice-title { font-size: 24px; margin: 0 0 4px; }
-.choice-sub { margin: 0 0 var(--space-6); color: var(--text-muted); font-size: 14px; }
+/* Heading */
+.choice-title {
+  font-size: 26px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  margin: 0 0 6px;
+  color: var(--text);
+}
 
-.choice-options { display: flex; flex-direction: column; gap: var(--space-3); }
+.choice-sub {
+  font-size: 14px;
+  color: var(--text-muted);
+  margin: 0 0 var(--sp-7);
+}
+
+/* Option cards */
+.choice-options {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+}
 
 .choice-option {
   display: flex;
   align-items: center;
-  gap: var(--space-4);
-  padding: 14px 16px;
-  background: var(--surface-2);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  color: var(--text);
-  transition: border-color 0.15s ease, background 0.15s ease, transform 0.05s ease;
+  gap: var(--sp-4);
+  padding: var(--sp-4) var(--sp-5);
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-lg);
+  text-decoration: none;
+  transition:
+    border-color var(--t-base),
+    background var(--t-base),
+    transform 120ms ease,
+    box-shadow var(--t-base);
+  cursor: pointer;
 }
+
 .choice-option:hover {
   border-color: var(--accent-border);
-  background: var(--surface-3);
-  color: var(--text);
+  background: var(--surface-2);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow);
 }
-.choice-option:active { transform: translateY(1px); }
 
 .choice-option-icon {
   width: 40px;
   height: 40px;
-  flex-shrink: 0;
   border-radius: var(--radius);
-  background: var(--accent-soft);
-  color: #93b8fb;
+  background: var(--surface-3);
+  border: 1px solid var(--border);
   display: flex;
   align-items: center;
   justify-content: center;
+  color: var(--text-muted);
+  flex-shrink: 0;
+  transition: background var(--t-base), color var(--t-base);
+}
+.choice-option:hover .choice-option-icon {
+  background: var(--accent-soft);
+  border-color: var(--accent-border);
+  color: var(--accent);
 }
 
-.choice-option-text { display: flex; flex-direction: column; flex: 1; gap: 2px; }
-.choice-option-label { font-size: 15px; font-weight: 600; }
-.choice-option-desc { font-size: 12.5px; color: var(--text-subtle); }
+.choice-option-text {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  flex: 1;
+}
 
-.choice-option-arrow { color: var(--text-subtle); font-size: 16px; transition: transform 0.15s ease, color 0.15s ease; }
-.choice-option:hover .choice-option-arrow { color: var(--accent); transform: translateX(3px); }
+.choice-option-label {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: -0.01em;
+}
 
-.choice-footer {
-  margin: var(--space-6) 0 0;
-  text-align: center;
-  font-size: 12px;
+.choice-option-desc {
+  font-size: 12.5px;
   color: var(--text-subtle);
+}
+
+.choice-option-arrow {
+  color: var(--text-dim);
+  font-size: 16px;
+  font-weight: 300;
+  transition: color var(--t-base), transform var(--t-base);
+}
+.choice-option:hover .choice-option-arrow {
+  color: var(--accent);
+  transform: translateX(2px);
+}
+
+/* Footer */
+.choice-footer {
+  margin-top: var(--sp-7);
+  font-size: 11.5px;
+  color: var(--text-dim);
+  letter-spacing: 0.04em;
 }

@@ -1,12 +1,15 @@
+import { useCallback, useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
+import api from '../../services/api.js'
 import { useAuth } from '../../context/AuthContext.jsx'
 import AppShell from '../../components/AppShell/AppShell.jsx'
 import './AdminDashboard.css'
 
 /**
- * AdminDashboard — landing page for admins. Redesign only: same role logic
- * (super_admin sees the management actions), now presented as quick-action
- * cards inside the shared AppShell. No API/behaviour changes.
+ * AdminDashboard — landing page for admins. Same role logic
+ * (super_admin sees the management actions), presented as quick-action
+ * cards inside the shared AppShell, plus a live Student Change Requests
+ * queue that both admins and super admins can action inline.
  */
 function ActionIcon({ d }) {
   return (
@@ -15,57 +18,217 @@ function ActionIcon({ d }) {
   )
 }
 
-const SUPER_ACTIONS = [
-  { to: '/admin/opportunities', title: 'Opportunities', desc: 'Post & manage drives', icon: 'M20 7H4a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2ZM16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2' },
-  { to: '/admin/companies', title: 'Companies', desc: 'Manage company profiles', icon: 'M3 21h18M5 21V7l8-4v18M19 21V11l-6-4' },
-  { to: '/admin/placement-records', title: 'Placement Records', desc: 'Upload & view records', icon: 'M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6ZM14 2v6h6' },
-  { to: '/admin/students', title: 'Student Search', desc: 'Look up students & resumes', icon: 'M21 21l-4.3-4.3M11 19a8 8 0 1 0 0-16 8 8 0 0 0 0 16Z' },
-  { to: '/admin/cgpa-upload', title: 'Upload CGPA', desc: 'Bulk-update CGPAs', icon: 'M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12' },
-  { to: '/admin/notifications', title: 'Send Notification', desc: 'Message students', icon: 'M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9M13.7 21a2 2 0 0 1-3.4 0' },
-  { to: '/admin/notification-history', title: 'Notification History', desc: 'View sent notifications & analytics', icon: 'M12 8v4l3 2M12 3a9 9 0 1 0 9 9' },
-  { to: '/admin/resume-reminders', title: 'Resume Reminders', desc: 'Email resume reminders', icon: 'M4 4h16a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2Zm18 2-10 7L2 6' },
-  { to: '/admin/manage-admins', title: 'Manage Admins', desc: 'Invite & manage admins', icon: 'M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z' },
-]
+
+
+function errText(err, fallback) {
+  const d = err?.response?.data?.detail
+  if (Array.isArray(d)) return d.map((x) => x.msg || x).join(' ')
+  return d || fallback
+}
+
+/**
+ * Student Change Requests — pending queue with inline accept/decline.
+ * Deliberately shows only the newest few; the full queue lives on
+ * /admin/change-requests.
+ */
+function ChangeRequestsSection() {
+  const [summary, setSummary] = useState(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
+  const [notice, setNotice] = useState('')
+  const [busyId, setBusyId] = useState(null)
+  const [declining, setDeclining] = useState(null)
+  const [declineNote, setDeclineNote] = useState('')
+  const [declineError, setDeclineError] = useState('')
+
+  const load = useCallback(async () => {
+    try {
+      const res = await api.get('/change-requests/admin/summary')
+      setSummary(res.data)
+      setError('')
+    } catch (err) {
+      setError(errText(err, 'Could not load change requests.'))
+    } finally {
+      setLoading(false)
+    }
+  }, [])
+
+  useEffect(() => { load() }, [load])
+
+  async function accept(req) {
+    setBusyId(req.id); setNotice(''); setError('')
+    try {
+      await api.post(`/change-requests/admin/${req.id}/accept`, { admin_note: null })
+      setNotice(`Updated ${req.field_label} for ${req.student_name}.`)
+      await load()
+    } catch (err) {
+      setError(errText(err, 'Could not accept that request.'))
+    } finally {
+      setBusyId(null)
+    }
+  }
+
+  async function confirmDecline() {
+    if (!declineNote.trim()) { setDeclineError('A reason is required.'); return }
+    setBusyId(declining.id); setDeclineError('')
+    try {
+      await api.post(`/change-requests/admin/${declining.id}/decline`, {
+        admin_note: declineNote.trim(),
+      })
+      setNotice(`Declined ${declining.field_label} for ${declining.student_name}.`)
+      setDeclining(null)
+      setDeclineNote('')
+      await load()
+    } catch (err) {
+      setDeclineError(errText(err, 'Could not decline that request.'))
+    } finally {
+      setBusyId(null)
+    }
+  }
+
+  const pending = summary?.pending_count ?? 0
+  const recent = summary?.recent ?? []
+
+  return (
+    <section className="card ad-cr">
+      <div className="ad-cr-head">
+        <div>
+          <h3 className="ad-cr-title">
+            Student Change Requests
+            {pending > 0 && <span className="badge badge-warning ad-cr-count">{pending} pending</span>}
+          </h3>
+          <p className="ad-cr-sub muted">
+            {pending > 0
+              ? `From ${summary.student_count} student${summary.student_count > 1 ? 's' : ''} · profile corrections awaiting review`
+              : 'Profile corrections submitted by students.'}
+          </p>
+        </div>
+        <div className="ad-cr-head-actions">
+          <button className="btn btn-ghost ad-cr-refresh" onClick={load} title="Refresh">↻</button>
+          <Link to="/admin/change-requests" className="btn btn-ghost">View all</Link>
+        </div>
+      </div>
+
+      {notice && <p className="alert alert-success">{notice}</p>}
+      {error && <p className="alert alert-error">{error}</p>}
+
+      {loading && <p className="muted">Loading…</p>}
+
+      {!loading && recent.length === 0 && !error && (
+        <p className="subtle ad-cr-empty">No pending requests right now.</p>
+      )}
+
+      {!loading && recent.length > 0 && (
+        <div className="ad-cr-list">
+          {recent.map((r) => (
+            <div key={r.id} className="ad-cr-item">
+              <div className="ad-cr-student">
+                <span className="ad-cr-name">{r.student_name || '—'}</span>
+                <code className="ad-cr-reg">{r.register_number || '—'}</code>
+                {r.branch && <span className="ad-cr-branch">{r.branch}</span>}
+              </div>
+
+              <div className="ad-cr-change">
+                <span className="ad-cr-field">{r.field_label}</span>
+                <div className="ad-cr-values">
+                  <span className="ad-cr-old">{r.current_value || 'not set'}</span>
+                  <span className="ad-cr-arrow">→</span>
+                  <span className="ad-cr-new">{r.requested_value}</span>
+                </div>
+                {r.is_stale && (
+                  <span className="ad-cr-stale" title={`Record now reads: ${r.live_value || 'not set'}`}>
+                    ⚠ Record changed since this was filed (now: {r.live_value || 'not set'})
+                  </span>
+                )}
+              </div>
+
+              <div className="ad-cr-meta">
+                <span className="badge badge-warning">{r.status}</span>
+                <span className="ad-cr-date">{new Date(r.created_at).toLocaleDateString()}</span>
+              </div>
+
+              <div className="ad-cr-actions">
+                <button
+                  className="btn btn-primary ad-cr-btn"
+                  disabled={busyId === r.id}
+                  onClick={() => accept(r)}
+                >
+                  {busyId === r.id ? '…' : 'Accept'}
+                </button>
+                <button
+                  className="btn btn-ghost ad-cr-btn"
+                  disabled={busyId === r.id}
+                  onClick={() => { setDeclining(r); setDeclineNote(''); setDeclineError('') }}
+                >
+                  Decline
+                </button>
+              </div>
+            </div>
+          ))}
+          {pending > recent.length && (
+            <Link to="/admin/change-requests" className="ad-cr-more">
+              + {pending - recent.length} more pending
+            </Link>
+          )}
+        </div>
+      )}
+
+      {declining && (
+        <div className="ad-cr-overlay" onClick={() => busyId === null && setDeclining(null)}>
+          <div className="ad-cr-modal" onClick={(e) => e.stopPropagation()}>
+            <h4 className="ad-cr-modal-title">Decline change request</h4>
+            <p className="ad-cr-modal-body">
+              <strong>{declining.student_name}</strong> asked to change{' '}
+              <strong>{declining.field_label}</strong> to <em>"{declining.requested_value}"</em>.
+              Their record will be left unchanged.
+            </p>
+            <label className="field-label">Reason (sent to the student)</label>
+            <textarea
+              className="textarea"
+              rows={3}
+              autoFocus
+              placeholder="e.g. This does not match the documents on file — please visit the placement cell."
+              value={declineNote}
+              onChange={(e) => setDeclineNote(e.target.value)}
+            />
+            {declineError && <p className="alert alert-error">{declineError}</p>}
+            <div className="ad-cr-modal-actions">
+              <button className="btn btn-ghost" disabled={busyId !== null} onClick={() => setDeclining(null)}>
+                Cancel
+              </button>
+              <button className="ad-cr-decline-confirm" disabled={busyId !== null} onClick={confirmDecline}>
+                {busyId !== null ? 'Declining…' : 'Confirm decline'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </section>
+  )
+}
 
 function AdminDashboard() {
   const { role } = useAuth()
   const isSuper = role === 'super_admin'
   return (
-    <AppShell title="Dashboard">
-      <div className="ad-hero card">
-        <div>
-          <h2 className="ad-hero-title">Welcome back</h2>
-          <p className="ad-hero-sub muted">
-            {isSuper
-              ? 'Manage drives, companies, records and students from one place.'
-              : 'Your placement cell workspace.'}
-          </p>
-        </div>
-        <span className="badge badge-accent">{isSuper ? 'Super Admin' : 'Admin'}</span>
+  <AppShell title="Dashboard">
+    {/* Welcome Back */}
+    <div className="ad-hero card">
+      <div>
+        <h2 className="ad-hero-title">Welcome back</h2>
+        <p className="ad-hero-sub muted">
+          {isSuper
+            ? 'Manage drives, companies, records and students from one place.'
+            : 'Your placement cell workspace.'}
+        </p>
       </div>
-      {isSuper ? (
-        <div className="ad-actions">
-          {SUPER_ACTIONS.map((a) => (
-            <Link key={a.to} to={a.to} className="ad-action">
-              <div className="ad-action-icon"><ActionIcon d={a.icon} /></div>
-              <div className="ad-action-text">
-                <span className="ad-action-title">{a.title}</span>
-                <span className="ad-action-desc">{a.desc}</span>
-              </div>
-              <span className="ad-action-arrow">→</span>
-            </Link>
-          ))}
-        </div>
-      ) : (
-        <div className="card ad-empty">
-          <p className="muted">
-            You're signed in as an administrator. Additional management tools are
-            available to super administrators.
-          </p>
-        </div>
-      )}
-    </AppShell>
-  )
+      <span className="badge badge-accent">{isSuper ? 'Super Admin' : 'Admin'}</span>
+    </div>
+
+    {/* Student Change Requests */}
+    <ChangeRequestsSection />
+  </AppShell>
+)
 }
 
 export default AdminDashboard

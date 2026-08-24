@@ -1,33 +1,125 @@
-/* Extra pieces used by StudentRegister on top of the shared auth.css:
-   the 2-step tracker, per-field errors/hints, readonly email preview. */
-
-.auth-steps {
-  display: flex;
-  align-items: center;
-  margin: 0 0 var(--space-5);
+.student-register-page {
+  background:
+    radial-gradient(1200px 600px at 50% -20%, rgba(59,130,246,0.10), transparent 60%),
+    var(--bg);
 }
-.auth-step-dot {
-  width: 26px; height: 26px; flex-shrink: 0;
-  border-radius: 50%;
+
+.student-register-card {
+  width: 100%;
+  max-width: 560px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-6);
+  box-shadow: var(--shadow-lg);
+}
+
+.student-register-title {
+  margin-bottom: var(--space-5);
+}
+
+.student-register-form {
+  gap: var(--space-4);
+}
+
+.student-register-form .auth-field select,
+.student-register-form .auth-field textarea {
+  width: 100%;
+  padding: 11px 13px;
   background: var(--surface-3);
   border: 1px solid var(--border-strong);
-  display: flex; align-items: center; justify-content: center;
-  font-size: 12px; font-weight: 600; color: var(--text-subtle);
-  transition: all 0.2s ease;
+  border-radius: var(--radius);
+  color: var(--text);
+  font-size: 15px;
+  font-family: inherit;
+  outline: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
-.auth-step-dot.active {
-  background: var(--accent);
-  border-color: var(--accent);
-  color: var(--on-accent);
-}
-.auth-step-line {
-  flex: 1; height: 1px; background: var(--border-strong); margin: 0 8px;
-  transition: background 0.2s ease;
-}
-.auth-step-line.active { background: var(--accent); }
 
-.auth-field-error { margin: 0; font-size: 12.5px; color: #fca5a5; }
-.auth-field-hint { margin: 0; font-size: 12.5px; color: var(--text-subtle); }
+.student-register-form .auth-field textarea {
+  resize: vertical;
+}
+
+.student-register-form .auth-field select:focus,
+.student-register-form .auth-field textarea:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+
+.student-register-textarea-field {
+  grid-column: 1 / -1;
+}
+
+.student-register-email-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.student-register-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.student-register-actions-otp {
+  justify-content: space-between;
+}
+
+.student-register-otp-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.student-register-otp-hint {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.student-register-verification-state {
+  margin: 4px 0 10px;
+}
+
+.student-register-verified {
+  color: #16a34a;
+  font-weight: 600;
+}
+
+.student-register-pending {
+  color: var(--text-muted);
+}
+
+.student-register-primary {
+  width: auto;
+  min-width: 140px;
+  padding-inline: 22px;
+}
+
+.student-register-link-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+}
+
+.student-register-success-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.student-register-footer {
+  margin-top: var(--space-5);
+}
+
+.auth-field-error {
+  margin: 0;
+  font-size: 12.5px;
+  color: #fca5a5;
+}
 
 .auth-readonly {
   color: var(--text-muted) !important;
@@ -35,14 +127,80 @@
   cursor: not-allowed;
 }
 
-.auth-otp-copy {
-  font-size: 14px; color: var(--text-muted); margin: 0; line-height: 1.5;
+.auth-readonly-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
 }
-.auth-otp-copy strong { color: var(--text); }
+
+.auth-copy-btn {
+  padding: 6px 10px;
+  border-radius: 10px;
+  border: 1px solid var(--border-strong);
+  background: var(--surface-2);
+  color: var(--text);
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.auth-copy-btn:hover {
+  background: var(--surface-3);
+}
+
+.auth-password-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.auth-password-wrap input {
+  flex: 1;
+}
+
+.auth-password-toggle {
+  margin-left: 8px;
+  padding: 6px 8px;
+  background: none;
+  border: 1px solid var(--border-strong);
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.password-strength {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+.password-strength.hidden {
+  display: none;
+}
+
+.strength-bar {
+  width: 90px;
+  height: 8px;
+  background: var(--surface-2);
+  border-radius: 999px;
+}
+
+.strength-bar.ok {
+  background: linear-gradient(90deg, var(--accent) 50%, #ffd166 100%);
+}
+
+.strength-bar.strong {
+  background: linear-gradient(90deg, #06b6d4, #10b981);
+}
+
+.strength-copy {
+  font-size: 12px;
+  color: var(--text-subtle);
+}
 
 .auth-text-btn {
-  width: 100%;
-  padding: 10px;
+  width: auto;
+  padding: 12px 0;
   background: none;
   border: none;
   color: var(--text-muted);
@@ -50,4 +208,32 @@
   font-family: inherit;
   cursor: pointer;
 }
-.auth-text-btn:hover { color: var(--text); }
+
+.auth-text-btn:hover:not(:disabled) {
+  color: var(--text);
+}
+
+.auth-text-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+@media (max-width: 640px) {
+  .student-register-card {
+    padding: var(--space-5);
+  }
+
+  .student-register-actions,
+  .student-register-actions-otp {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .student-register-otp-actions {
+    align-items: stretch;
+  }
+
+  .student-register-primary {
+    width: 100%;
+  }
+}

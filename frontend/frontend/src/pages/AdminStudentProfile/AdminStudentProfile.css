@@ -1,0 +1,243 @@
+/* ═══════════════════════════════════════════════════════════════════════
+   Admin Student Profile
+   ═══════════════════════════════════════════════════════════════════════ */
+
+.asp-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--sp-5);
+  flex-wrap: wrap;
+  gap: var(--sp-3);
+}
+
+.asp-back {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: none;
+  border: none;
+  color: var(--text-subtle);
+  font-size: 13px;
+  cursor: pointer;
+  padding: 0;
+  font-family: inherit;
+  transition: color var(--t-base);
+}
+.asp-back:hover { color: var(--text); }
+
+.asp-actions { display: flex; gap: var(--sp-2); align-items: center; }
+
+.asp-delete-btn {
+  background: transparent;
+  border: 1px solid var(--danger-border);
+  color: var(--danger);
+  border-radius: var(--radius);
+  padding: 7px 14px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background var(--t-base), color var(--t-base);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.asp-delete-btn:hover { background: var(--danger-soft); }
+
+/* ── Summary row ─────────────────────────────────────────────────── */
+.asp-top-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: var(--sp-4);
+  margin-bottom: var(--sp-4);
+}
+
+.asp-card { padding: var(--sp-4); }
+
+.asp-main-top {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  margin-bottom: var(--sp-3);
+}
+
+.asp-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--accent-soft);
+  border: 1.5px solid var(--accent-border);
+  color: var(--on-accent-soft);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+  font-weight: 800;
+  flex-shrink: 0;
+  letter-spacing: -0.04em;
+}
+
+.asp-name { font-size: 15px; font-weight: 700; margin: 0 0 4px; letter-spacing: -0.02em; }
+
+.asp-summary { display: flex; flex-direction: column; }
+
+.asp-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-2);
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border-subtle);
+  font-size: 13px;
+}
+.asp-row:last-child, .asp-row-last { border-bottom: none; }
+.asp-row > span { color: var(--text-subtle); }
+.asp-row > b   { font-weight: 600; color: var(--text); font-size: 12.5px; text-align: right; }
+
+.asp-card-title { font-size: 12.5px; font-weight: 700; margin: 0 0 var(--sp-3); text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-subtle); }
+
+.asp-resume-btns { display: flex; gap: var(--sp-2); }
+
+/* ── Full details ─────────────────────────────────────────────────── */
+.asp-details-card {
+  padding: 0;
+  overflow: hidden;
+}
+
+.asp-detail-section {
+  padding: var(--sp-4) var(--sp-5);
+  border-bottom: 1px solid var(--border-subtle);
+}
+.asp-detail-section:last-child { border-bottom: none; }
+
+.asp-detail-title {
+  font-size: 10.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text-subtle);
+  margin: 0 0 var(--sp-3);
+}
+
+.asp-detail-rows { display: flex; flex-direction: column; }
+
+/* ── Edit panel ──────────────────────────────────────────────────── */
+.asp-panel-overlay {
+  position: fixed; inset: 0;
+  background: rgba(2,8,18,.65);
+  backdrop-filter: blur(2px);
+  z-index: 50;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.asp-panel {
+  width: min(760px, 100vw);
+  height: 100vh;
+  background: var(--surface);
+  border-left: 1px solid var(--border-strong);
+  box-shadow: var(--shadow-xl);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.asp-panel-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--sp-4);
+  padding: var(--sp-5) var(--sp-5) var(--sp-4);
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.asp-panel-title { margin: 0 0 3px; font-size: 15px; font-weight: 700; }
+.asp-panel-sub   { margin: 0; font-size: 13px; color: var(--text-muted); }
+
+.asp-panel-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--sp-2) var(--sp-5) var(--sp-5);
+}
+
+.asp-panel-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--sp-2);
+  padding: var(--sp-4) var(--sp-5);
+  border-top: 1px solid var(--border);
+  flex-shrink: 0;
+  background: var(--surface-2);
+}
+
+.asp-edit-section {
+  padding: var(--sp-4) 0;
+  border-bottom: 1px solid var(--border-subtle);
+}
+.asp-edit-section:last-child { border-bottom: none; }
+
+.asp-edit-section-title {
+  font-size: 10.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-subtle);
+  margin: 0 0 var(--sp-3);
+}
+
+.asp-edit-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  gap: var(--sp-3);
+}
+
+.asp-edit-field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  font-size: 13px;
+}
+.asp-edit-field span { font-size: 12px; font-weight: 500; color: var(--text-muted); }
+.asp-edit-field--wide { grid-column: 1 / -1; }
+
+/* ── Delete modal ─────────────────────────────────────────────────── */
+.asp-modal-overlay {
+  position: fixed; inset: 0;
+  background: rgba(2,8,18,.72);
+  backdrop-filter: blur(3px);
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--sp-5);
+}
+.asp-modal {
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-xl);
+  padding: var(--sp-5);
+  width: 100%;
+  max-width: 480px;
+  animation: slideUp 180ms ease;
+}
+.asp-modal-title { margin: 0 0 var(--sp-3); font-size: 15px; font-weight: 700; color: var(--danger); }
+.asp-modal-body  { margin: 0 0 var(--sp-3); font-size: 13.5px; color: var(--text-muted); line-height: 1.65; }
+.asp-modal-actions { display: flex; justify-content: flex-end; gap: var(--sp-2); margin-top: var(--sp-4); }
+
+.asp-delete-confirm {
+  background: var(--danger); color: #fff; border: none;
+  border-radius: var(--radius); padding: 9px 18px;
+  font-size: 13.5px; font-weight: 600; cursor: pointer; font-family: inherit;
+  transition: filter var(--t-base);
+}
+.asp-delete-confirm:disabled { opacity: .4; cursor: not-allowed; }
+.asp-delete-confirm:hover:not(:disabled) { filter: brightness(1.1); }
+
+/* ── Responsive ──────────────────────────────────────────────────── */
+@media (max-width: 900px) {
+  .asp-top-grid { grid-template-columns: 1fr; }
+  .asp-panel { width: 100vw; }
+  .asp-edit-grid { grid-template-columns: 1fr; }
+}

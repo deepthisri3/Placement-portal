@@ -1,104 +1,199 @@
+/* ═══════════════════════════════════════════════════════════════════════
+   Student Dashboard — opportunity cards
+   ═══════════════════════════════════════════════════════════════════════ */
+
+/* Page intro bar */
 .sd-intro {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
-  gap: var(--space-4);
-  margin-bottom: var(--space-5);
+  gap: var(--sp-4);
+  flex-wrap: wrap;
+  margin-bottom: var(--sp-5);
 }
-.sd-intro-title { font-size: 20px; margin: 0 0 4px; }
-.sd-intro-sub { margin: 0; font-size: 14px; }
 
-.opp-section { margin-bottom: var(--space-6); }
+.sd-intro-title {
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  margin: 0 0 3px;
+}
+
+.sd-intro-sub { font-size: 13px; color: var(--text-muted); margin: 0; }
+
+/* Sections */
+.opp-section { margin-bottom: var(--sp-7); }
+
 .opp-section-head {
   display: flex;
   align-items: center;
-  gap: var(--space-3);
-  margin-bottom: var(--space-4);
-}
-.opp-section-title { font-size: 16px; margin: 0; }
-.opp-count {
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--text-muted);
-  background: var(--surface-2);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-full);
-  padding: 1px 9px;
+  gap: var(--sp-3);
+  margin-bottom: var(--sp-4);
 }
 
+.opp-section-title {
+  font-size: 13.5px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  margin: 0;
+}
+
+.opp-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 22px;
+  height: 20px;
+  padding: 0 6px;
+  background: var(--surface-3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-full);
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-subtle);
+}
+
+/* Card grid */
 .opp-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: var(--space-4);
+  gap: var(--sp-4);
 }
 
+/* Opportunity card */
 .opp-card {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
-  padding: var(--space-5);
+  padding: var(--sp-4) var(--sp-4) var(--sp-4);
   display: flex;
   flex-direction: column;
-  transition: border-color 0.15s ease, transform 0.05s ease;
+  gap: var(--sp-3);
+  transition: border-color var(--t-base), box-shadow var(--t-base), transform 120ms ease;
+  position: relative;
+  overflow: hidden;
 }
-.opp-card:hover { border-color: var(--border-strong); }
 
+.opp-card:hover {
+  border-color: var(--border-strong);
+  box-shadow: var(--shadow-sm);
+  transform: translateY(-1px);
+}
+
+/* Top accent strip (returning company) */
 .opp-card-top {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  gap: var(--space-3);
-  margin-bottom: var(--space-2);
+  gap: var(--sp-2);
 }
-.opp-card-title { font-size: 16px; margin: 0; line-height: 1.3; }
+
+.opp-card-title {
+  font-size: 14.5px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--text);
+  margin: 0;
+  line-height: 1.3;
+}
 
 .opp-card-detail {
-  font-size: 13.5px;
-  color: var(--text-muted);
-  margin: 0 0 var(--space-4);
-  line-height: 1.55;
+  font-size: 12.5px;
+  color: var(--text-subtle);
+  line-height: 1.5;
+  margin: 0;
   display: -webkit-box;
-  -webkit-line-clamp: 3;
+  -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
 
+/* Deadline pill */
 .opp-deadline {
   display: inline-flex;
   align-items: center;
-  gap: 7px;
-  font-size: 12.5px;
-  font-weight: 500;
-  padding: 4px 10px;
+  gap: 6px;
+  font-size: 11.5px;
+  font-weight: 600;
   border-radius: var(--radius-full);
-  margin-bottom: var(--space-4);
+  padding: 3px 9px;
   align-self: flex-start;
-  border: 1px solid transparent;
 }
-.opp-deadline-dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
-.opp-deadline-ok { background: var(--success-soft); color: #6ee7a0; border-color: rgba(34,197,94,0.25); }
-.opp-deadline-warn { background: var(--warning-soft); color: #fcd34d; border-color: rgba(245,158,11,0.25); }
-.opp-deadline-closed { background: var(--danger-soft); color: #fca5a5; border-color: rgba(239,68,68,0.25); }
 
+.opp-deadline-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.opp-deadline-ok {
+  background: var(--success-soft);
+  color: var(--on-success-soft);
+  border: 1px solid var(--success-border);
+}
+.opp-deadline-ok .opp-deadline-dot { background: var(--success); }
+
+.opp-deadline-warn {
+  background: var(--warning-soft);
+  color: var(--on-warning-soft);
+  border: 1px solid var(--warning-border);
+}
+.opp-deadline-warn .opp-deadline-dot { background: var(--warning); }
+
+.opp-deadline-closed {
+  background: var(--surface-3);
+  color: var(--text-dim);
+  border: 1px solid var(--border);
+}
+.opp-deadline-closed .opp-deadline-dot { background: var(--text-dim); }
+
+/* Actions */
 .opp-card-actions {
   display: flex;
-  gap: var(--space-2);
-  margin-top: auto;
+  align-items: center;
+  gap: var(--sp-2);
+  margin-top: var(--sp-1);
 }
-.opp-link { flex: 0 0 auto; }
-.opp-card-actions .btn:last-child { flex: 1; }
-.opp-applied { color: #6ee7a0 !important; border-color: rgba(34,197,94,0.3) !important; }
 
-.opp-empty {
+.opp-link {
+  font-size: 12.5px;
+  padding: 7px 12px;
+}
+
+.opp-applied {
+  font-size: 12.5px;
+  padding: 7px 12px;
+  color: var(--on-success-soft);
+  border-color: var(--success-border);
+  background: var(--success-soft);
+}
+
+/* Skeleton */
+.opp-skeleton {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: var(--sp-4);
   display: flex;
   flex-direction: column;
+  gap: var(--sp-3);
+}
+
+/* Empty */
+.opp-empty {
+  display: flex;
   align-items: center;
-  gap: var(--space-3);
-  padding: var(--space-7) var(--space-4);
-  color: var(--text-subtle);
+  gap: var(--sp-3);
+  padding: var(--sp-5);
   background: var(--surface);
   border: 1px dashed var(--border-strong);
   border-radius: var(--radius-lg);
-  text-align: center;
+  color: var(--text-subtle);
+  font-size: 13.5px;
 }
-.opp-empty p { margin: 0; font-size: 14px; }
+
+@media (max-width: 640px) {
+  .opp-grid { grid-template-columns: 1fr; }
+  .sd-intro  { flex-direction: column; }
+}

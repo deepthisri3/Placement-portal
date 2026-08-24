@@ -1,7 +1,6 @@
 from sqlalchemy import Column, Integer, String, ForeignKey, Numeric, Text, Date
 from sqlalchemy.orm import relationship
-from app.database import Base
-
+from ..database import Base
 
 class Student(Base):
     """
@@ -12,6 +11,7 @@ class Student(Base):
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("users.id"), unique=True, nullable=False)
     full_name = Column(String(255), nullable=False)
+    last_name = Column(String(255), nullable=True)
     register_number = Column(String(20), unique=True, nullable=False, index=True)
     phone = Column(String(15), nullable=False)
 
@@ -21,6 +21,7 @@ class Student(Base):
     skills = Column(Text, nullable=True)
     graduation_year = Column(Integer, nullable=True)
     resume_filename = Column(String(255), nullable=True)
+    photo_filename = Column(String(255), nullable=True)
 
     # --- Extended personal details ---
     date_of_birth = Column(Date, nullable=True)
@@ -51,5 +52,30 @@ class Student(Base):
     aadhar_no = Column(String(20), nullable=True)
     name_as_per_aadhar = Column(String(100), nullable=True)
     pan_number = Column(String(20), nullable=True)
+
+    # Educational details
+    ssc_school_name = Column(String(255), nullable=True)
+    ssc_board = Column(String(120), nullable=True)
+    ssc_year_of_passing = Column(Integer, nullable=True)
+    ssc_marks_obtained = Column(Numeric(8, 2), nullable=True)
+    ssc_maximum_marks = Column(Numeric(8, 2), nullable=True)
+    ssc_percentage = Column(Numeric(6, 2), nullable=True)
+
+    intermediate_course_type = Column(String(50), nullable=True)
+    intermediate_college_name = Column(String(255), nullable=True)
+    intermediate_board = Column(String(120), nullable=True)
+    intermediate_year_of_passing = Column(Integer, nullable=True)
+    intermediate_marks_obtained = Column(Numeric(8, 2), nullable=True)
+    intermediate_maximum_marks = Column(Numeric(8, 2), nullable=True)
+    intermediate_percentage = Column(Numeric(6, 2), nullable=True)
+
+    entrance_exam = Column(String(120), nullable=True)
+    entrance_rank = Column(Integer, nullable=True)
+    seat_status = Column(String(50), nullable=True)
+
+    education_gap_years = Column(Integer, nullable=True)
+    education_gap_reason = Column(Text, nullable=True)
+
+    foreign_languages_known = Column(Text, nullable=True)
 
     user = relationship("User", back_populates="student")

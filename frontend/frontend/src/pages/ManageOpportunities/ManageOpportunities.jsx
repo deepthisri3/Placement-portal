@@ -4,8 +4,6 @@ import api from '../../services/api.js'
 import AppShell from '../../components/AppShell/AppShell.jsx'
 import './ManageOpportunities.css'
 
-const BRANCHES = ['CSE', 'IT', 'ML', 'DS', 'ECE', 'EEE', 'MECH', 'CYBER']
-
 const EMPTY_ON_CAMPUS_FORM = {
   company_name: '',
   is_existing_company: false,
@@ -38,7 +36,6 @@ function toDatetimeLocalValue(isoString) {
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`
 }
 
-// Reusable checkbox group for targeting. `selected` is an array of strings.
 function TargetSelector({ label, options, selected, onChange, emptyText }) {
   function toggle(value) {
     if (selected.includes(value)) {
@@ -76,6 +73,7 @@ function ManageOpportunities() {
   const [onCampusList, setOnCampusList] = useState([])
   const [offCampusList, setOffCampusList] = useState([])
   const [years, setYears] = useState([])
+  const [branches, setBranches] = useState([])
   const [isLoadingList, setIsLoadingList] = useState(true)
   const [listError, setListError] = useState('')
   const [showForm, setShowForm] = useState(false)
@@ -105,9 +103,13 @@ function ManageOpportunities() {
 
   useEffect(() => {
     loadLists()
-    api.get('/students/graduation-years')
-      .then((res) => setYears((res.data || []).map(String)))
+    // Batches (graduation years) and branches now come from the admin-managed tables.
+    api.get('/academic/batches')
+      .then((res) => setYears((res.data || []).map((b) => String(b.graduation_year))))
       .catch(() => setYears([]))
+    api.get('/academic/branches')
+      .then((res) => setBranches((res.data || []).map((b) => b.code)))
+      .catch(() => setBranches([]))
   }, [])
 
   function extractErrorMessage(err, fallback) {
@@ -259,53 +261,46 @@ function ManageOpportunities() {
         <form className="card mo-form" onSubmit={handleOnCampusSubmit} noValidate>
           <h3 className="mo-form-title">{editingId !== null ? 'Edit Opportunity' : 'Post New Opportunity'}</h3>
           {formError && <p className="alert alert-error">{formError}</p>}
-
           <div className="mo-field">
             <label className="field-label">Company name</label>
             <input className="input" type="text" value={onCampusForm.company_name}
               onChange={(e) => setOnCampusForm({ ...onCampusForm, company_name: e.target.value })} placeholder="e.g. TCS" />
           </div>
-
           <label className="mo-check">
             <input type="checkbox" checked={onCampusForm.is_existing_company}
               onChange={(e) => setOnCampusForm({ ...onCampusForm, is_existing_company: e.target.checked })} />
             <span>Existing company (has visited before)</span>
           </label>
-
           <div className="mo-field">
             <label className="field-label">Registration link</label>
             <input className="input" type="text" value={onCampusForm.registration_link}
               onChange={(e) => setOnCampusForm({ ...onCampusForm, registration_link: e.target.value })} placeholder="https://..." />
           </div>
-
           <div className="mo-field">
             <label className="field-label">Last date to apply</label>
             <input className="input" type="datetime-local" value={onCampusForm.last_date_to_apply}
               onChange={(e) => setOnCampusForm({ ...onCampusForm, last_date_to_apply: e.target.value })} />
             <p className="mo-hint">Select both a date and a time (e.g. 23:59 for end of day).</p>
           </div>
-
           <div className="mo-field">
             <label className="field-label">Eligibility criteria</label>
             <textarea className="textarea" value={onCampusForm.eligibility_criteria}
               onChange={(e) => setOnCampusForm({ ...onCampusForm, eligibility_criteria: e.target.value })}
               placeholder="e.g. CGPA >= 7, CSE/IT only, no active backlogs" rows={3} />
           </div>
-
           <div className="mo-field">
             <label className="field-label">Package offered (optional — usually filled in after the drive)</label>
             <input className="input" type="number" step="0.01" value={onCampusForm.package_offered}
               onChange={(e) => setOnCampusForm({ ...onCampusForm, package_offered: e.target.value })} placeholder="e.g. 6.5" />
           </div>
-
           <TargetSelector label="Target batches (graduation year)" options={years}
             selected={onCampusForm.target_graduation_years}
             onChange={(v) => setOnCampusForm({ ...onCampusForm, target_graduation_years: v })}
-            emptyText="No student batches found yet." />
-          <TargetSelector label="Target branches" options={BRANCHES}
+            emptyText="No batches added yet. Add them in Manage Branches & Batches." />
+          <TargetSelector label="Target branches" options={branches}
             selected={onCampusForm.target_branches}
-            onChange={(v) => setOnCampusForm({ ...onCampusForm, target_branches: v })} />
-
+            onChange={(v) => setOnCampusForm({ ...onCampusForm, target_branches: v })}
+            emptyText="No branches added yet. Add them in Manage Branches & Batches." />
           <button type="submit" className="btn btn-primary btn-block" disabled={isPosting}>
             {isPosting ? 'Saving…' : editingId !== null ? 'Save Changes' : 'Post Opportunity'}
           </button>
@@ -316,46 +311,40 @@ function ManageOpportunities() {
         <form className="card mo-form" onSubmit={handleOffCampusSubmit} noValidate>
           <h3 className="mo-form-title">{editingId !== null ? 'Edit Opportunity' : 'Post New Opportunity'}</h3>
           {formError && <p className="alert alert-error">{formError}</p>}
-
           <div className="mo-field">
             <label className="field-label">Title</label>
             <input className="input" type="text" value={offCampusForm.title}
               onChange={(e) => setOffCampusForm({ ...offCampusForm, title: e.target.value })} placeholder="e.g. Flipkart GRiD" />
           </div>
-
           <div className="mo-field">
             <label className="field-label">Description</label>
             <textarea className="textarea" value={offCampusForm.description}
               onChange={(e) => setOffCampusForm({ ...offCampusForm, description: e.target.value })} rows={3} />
           </div>
-
           <div className="mo-field">
             <label className="field-label">Link</label>
             <input className="input" type="text" value={offCampusForm.link}
               onChange={(e) => setOffCampusForm({ ...offCampusForm, link: e.target.value })} placeholder="https://..." />
           </div>
-
           <div className="mo-field">
             <label className="field-label">Photo URL (optional)</label>
             <input className="input" type="text" value={offCampusForm.photo_url}
               onChange={(e) => setOffCampusForm({ ...offCampusForm, photo_url: e.target.value })} placeholder="https://..." />
           </div>
-
           <div className="mo-field">
             <label className="field-label">Last date to apply</label>
             <input className="input" type="datetime-local" value={offCampusForm.last_date_to_apply}
               onChange={(e) => setOffCampusForm({ ...offCampusForm, last_date_to_apply: e.target.value })} />
             <p className="mo-hint">Select both a date and a time (e.g. 23:59 for end of day).</p>
           </div>
-
           <TargetSelector label="Target batches (graduation year)" options={years}
             selected={offCampusForm.target_graduation_years}
             onChange={(v) => setOffCampusForm({ ...offCampusForm, target_graduation_years: v })}
-            emptyText="No student batches found yet." />
-          <TargetSelector label="Target branches" options={BRANCHES}
+            emptyText="No batches added yet. Add them in Manage Branches & Batches." />
+          <TargetSelector label="Target branches" options={branches}
             selected={offCampusForm.target_branches}
-            onChange={(v) => setOffCampusForm({ ...offCampusForm, target_branches: v })} />
-
+            onChange={(v) => setOffCampusForm({ ...offCampusForm, target_branches: v })}
+            emptyText="No branches added yet. Add them in Manage Branches & Batches." />
           <button type="submit" className="btn btn-primary btn-block" disabled={isPosting}>
             {isPosting ? 'Saving…' : editingId !== null ? 'Save Changes' : 'Post Opportunity'}
           </button>
@@ -368,7 +357,6 @@ function ManageOpportunities() {
         {!isLoadingList && !listError && currentList.length === 0 && (
           <div className="mo-empty">Nothing posted yet.</div>
         )}
-
         {!isLoadingList && currentList.length > 0 && (
           <div className="card mo-table-wrap">
             <table className="table">

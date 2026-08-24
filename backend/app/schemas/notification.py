@@ -26,10 +26,10 @@ class UnreadCountOut(BaseModel):
 class BroadcastRequest(BaseModel):
     title: str
     message: str
-    target_type: str = "all"                 # 'all' | 'branch' | 'year' | 'year_branch'
+    target_type: str   # all | branch | year | year_branch | cluster
     target_branch: Optional[str] = None
     target_year: Optional[int] = None
-
+    target_cluster_id: Optional[int] = None  # ← add this line
     @field_validator("title")
     @classmethod
     def title_ok(cls, v: str) -> str:

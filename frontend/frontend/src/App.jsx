@@ -23,12 +23,36 @@ import ResumeReminder from "./pages/ResumeReminder/ResumeReminder";
 import CgpaUpload from "./pages/CgpaUpload/CgpaUpload";
 import NotificationHistory from "./pages/NotificationHistory/NotificationHistory";
 import StudentDetails from './pages/StudentDetails/StudentDetails.jsx'
-
+import BranchPlacementStatistics from './pages/BranchPlacementStatistics/BranchPlacementStatistics.jsx'
+import AdminStudentProfile from './pages/AdminStudentProfile/AdminStudentProfile.jsx'
+import ManageBranchesBatches from './pages/ManageBranchesBatches/ManageBranchesBatches.jsx'
+import ManageClusters from './pages/ManageClusters/ManageClusters.jsx'
+import ReportChanges from "./pages/ReportChanges/ReportChanges.jsx";
+import AdminChangeRequests from "./pages/AdminChangeRequests/AdminChangeRequests.jsx";
+import MessageAdmin from './pages/MessageAdmin/MessageAdmin.jsx'
+import AdminMessages from './pages/AdminMessages/AdminMessages.jsx'
+import StudentNotificationHistory from './pages/StudentNotificationHistory/StudentNotificationHistory.jsx'
 function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
         <Routes>
+          <Route
+  path="/student/report-changes"
+  element={
+    <ProtectedRoute allowedRoles={["student"]}>
+      <ReportChanges />
+    </ProtectedRoute>
+  }
+/>
+<Route
+  path="/admin/change-requests"
+  element={
+    <ProtectedRoute allowedRoles={["admin", "super_admin"]}>
+      <AdminChangeRequests />
+    </ProtectedRoute>
+  }
+/>
           <Route path="/" element={<Navigate to="/login" replace />} />
           <Route path="/login" element={<LoginChoice />} />
           <Route path="/register/student" element={<StudentRegister />} />
@@ -105,6 +129,14 @@ function App() {
     </ProtectedRoute>
   }
 />
+<Route
+  path="/admin/branch-placement-statistics"
+  element={
+    <ProtectedRoute allowedRoles={["admin", "super_admin"]}>
+      <BranchPlacementStatistics />
+    </ProtectedRoute>
+  }
+/>
           <Route
   path="/company-search"
   element={
@@ -162,6 +194,14 @@ function App() {
   }
 />
 <Route
+  path="/admin/branches-batches"
+  element={
+    <ProtectedRoute allowedRoles={['admin', 'super_admin']}>
+      <ManageBranchesBatches />
+    </ProtectedRoute>
+  }
+/>
+<Route
   path="/student/details"
   element={
     <ProtectedRoute allowedRoles={['student']}>
@@ -169,10 +209,47 @@ function App() {
     </ProtectedRoute>
   }
 />
+<Route
+  path="/admin/student/:registerNumber"
+  element={
+    <ProtectedRoute allowedRoles={['admin', 'super_admin']}>
+      <AdminStudentProfile />
+    </ProtectedRoute>
+  }
+/>
+<Route
+  path="/admin/clusters"
+  element={
+    <ProtectedRoute allowedRoles={['admin', 'super_admin']}>
+      <ManageClusters />
+    </ProtectedRoute>
+  }
+/>
+<Route path="/student/message-admin" element={
+  <ProtectedRoute allowedRoles={['student']}>
+    <MessageAdmin />
+  </ProtectedRoute>
+} />
+
+<Route path="/admin/messages" element={
+  <ProtectedRoute allowedRoles={['admin', 'super_admin']}>
+    <AdminMessages />
+  </ProtectedRoute>
+} />
+<Route path="/student/notifications" element={
+  <ProtectedRoute allowedRoles={['student']}>
+    <StudentNotificationHistory />
+  </ProtectedRoute>
+} />
         </Routes>
       </AuthProvider>
     </BrowserRouter>
   )
 }
+
+
+
+
+
 
 export default App

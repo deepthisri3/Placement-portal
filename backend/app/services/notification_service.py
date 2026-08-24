@@ -1,6 +1,5 @@
 """
 Notification business logic.
-
 Deadline notifications are generated lazily (no scheduler): whenever a student
 reads their notifications or the unread count, we ensure a deadline row exists
 for every opportunity closing within the next 7 days.
@@ -11,15 +10,12 @@ from sqlalchemy import text, func
 from sqlalchemy.orm import Session
 from app.models.notification import Notification, NotificationBroadcast
 from app.models.student import Student
+from app.models.cluster import ClusterMember
 
 logger = logging.getLogger(__name__)
-
 DEADLINE_WINDOW_DAYS = 7
 
 
-# ---------------------------------------------------------------------------
-# identity
-# ---------------------------------------------------------------------------
 def _resolve_student(db: Session, current_user) -> Student:
     student = (
         db.query(Student)
@@ -31,9 +27,6 @@ def _resolve_student(db: Session, current_user) -> Student:
     return student
 
 
-# ---------------------------------------------------------------------------
-# lazy deadline generation
-# ---------------------------------------------------------------------------
 def _generate_deadline_notifications(db: Session, student_id: int) -> None:
     try:
         rows = db.execute(text(f"""
@@ -86,7 +79,6 @@ def _generate_deadline_notifications(db: Session, student_id: int) -> None:
             opportunity_id=oid,
         ))
         created = True
-
     if created:
         try:
             db.commit()
@@ -95,9 +87,6 @@ def _generate_deadline_notifications(db: Session, student_id: int) -> None:
             db.rollback()
 
 
-# ---------------------------------------------------------------------------
-# student reads
-# ---------------------------------------------------------------------------
 def list_notifications(db: Session, current_user) -> dict:
     student = _resolve_student(db, current_user)
     _generate_deadline_notifications(db, student.id)
@@ -145,10 +134,18 @@ def mark_all_read(db: Session, current_user) -> None:
     db.commit()
 
 
-# ---------------------------------------------------------------------------
-# admin broadcast + history + analytics
-# ---------------------------------------------------------------------------
 def _recipient_query(db: Session, data):
+    """Returns a list of student IDs matching the target criteria."""
+    if data.target_type == "cluster":
+        if not data.target_cluster_id:
+            raise HTTPException(status_code=400, detail="Cluster ID is required.")
+        rows = (
+            db.query(ClusterMember.student_id)
+            .filter(ClusterMember.cluster_id == data.target_cluster_id)
+            .all()
+        )
+        return [row[0] for row in rows]
+
     q = db.query(Student.id)
     if data.target_type == "branch":
         if not data.target_branch:
@@ -165,15 +162,14 @@ def _recipient_query(db: Session, data):
             Student.graduation_year == data.target_year,
             func.lower(Student.branch) == data.target_branch.lower(),
         )
-    return q
+    return [row[0] for row in q.all()]
 
 
 def broadcast(db: Session, data, current_user=None) -> dict:
-    student_ids = [row[0] for row in _recipient_query(db, data).all()]
+    student_ids = _recipient_query(db, data)
     if not student_ids:
         return {"recipients": 0, "message": "No matching students; nothing sent."}
 
-    # Record the broadcast (history) first.
     b = NotificationBroadcast(
         title=data.title.strip(),
         message=data.message.strip(),
@@ -184,7 +180,7 @@ def broadcast(db: Session, data, current_user=None) -> dict:
         created_by=getattr(current_user, "user_id", None),
     )
     db.add(b)
-    db.flush()  # assigns b.id
+    db.flush()
 
     for sid in student_ids:
         db.add(Notification(
@@ -208,6 +204,8 @@ def _audience_label(b: NotificationBroadcast) -> str:
         return f"Batch {b.target_year}"
     if b.target_type == "year_branch":
         return f"{b.target_year} · {b.target_branch}"
+    if b.target_type == "cluster":
+        return f"Cluster #{b.target_cluster_id if hasattr(b, 'target_cluster_id') else '?'}"
     return b.target_type
 
 
@@ -223,7 +221,6 @@ def broadcast_analytics(db: Session, broadcast_id: int) -> dict:
     b = db.query(NotificationBroadcast).filter(NotificationBroadcast.id == broadcast_id).first()
     if not b:
         raise HTTPException(status_code=404, detail="Broadcast not found.")
-
     delivered = (
         db.query(func.count(Notification.id))
         .filter(Notification.broadcast_id == b.id)
@@ -234,7 +231,6 @@ def broadcast_analytics(db: Session, broadcast_id: int) -> dict:
         .filter(Notification.broadcast_id == b.id, Notification.is_read.is_(True))
         .scalar()
     ) or 0
-
     return {
         "id": b.id,
         "title": b.title,

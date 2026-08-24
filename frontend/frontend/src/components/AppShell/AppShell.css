@@ -1,10 +1,14 @@
+/* ═══════════════════════════════════════════════════════════════════════
+   AppShell — persistent application frame
+   ═══════════════════════════════════════════════════════════════════════ */
+
 .shell {
   display: flex;
   min-height: 100vh;
   background: var(--bg);
 }
 
-/* ---------- Sidebar ---------- */
+/* ── Sidebar ──────────────────────────────────────────────────────── */
 .shell-sidebar {
   width: var(--sidebar-w);
   flex-shrink: 0;
@@ -12,120 +16,233 @@
   border-right: 1px solid var(--border);
   display: flex;
   flex-direction: column;
-  padding: var(--space-4);
   position: sticky;
   top: 0;
   height: 100vh;
+  overflow-y: auto;
+  overflow-x: hidden;
+  z-index: 30;
 }
 
+/* Brand */
 .shell-brand {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: var(--space-2) var(--space-2) var(--space-5);
+  gap: 11px;
+  padding: 18px 16px 14px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
 }
 .shell-logo {
-  width: 34px; height: 34px; flex-shrink: 0;
-  border-radius: var(--radius);
+  width: 30px; height: 30px;
+  flex-shrink: 0;
+  border-radius: var(--radius-sm);
   background: var(--accent);
-  color: var(--on-accent);
+  color: #fff;
   display: flex; align-items: center; justify-content: center;
-  font-weight: 700; font-size: 14px; letter-spacing: -0.02em;
+  font-weight: 800; font-size: 12px; letter-spacing: -0.04em;
 }
-.shell-brand-text { display: flex; flex-direction: column; }
-.shell-brand-name { font-size: 14px; font-weight: 600; color: var(--text); }
-.shell-brand-sub { font-size: 12px; color: var(--text-subtle); }
+.shell-brand-text { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+.shell-brand-name {
+  font-size: 13px; font-weight: 700; color: var(--text);
+  letter-spacing: -0.02em; white-space: nowrap;
+  overflow: hidden; text-overflow: ellipsis;
+}
+.shell-brand-sub {
+  font-size: 10.5px; color: var(--text-subtle);
+  letter-spacing: 0.02em; text-transform: uppercase; font-weight: 600;
+}
 
-.shell-nav { display: flex; flex-direction: column; gap: 2px; flex: 1; }
+/* Nav */
+.shell-nav {
+  display: flex; flex-direction: column;
+  padding: 12px 10px; gap: 1px; flex: 1;
+}
 
 .shell-nav-item {
-  display: flex;
-  align-items: center;
-  gap: 11px;
-  padding: 9px 11px;
-  border-radius: var(--radius);
-  color: var(--text-muted);
-  font-size: 14px;
-  font-weight: 500;
-  transition: background 0.13s ease, color 0.13s ease;
-}
-.shell-nav-item:hover { background: var(--surface-2); color: var(--text); }
-.shell-nav-item.active { background: var(--accent-soft); color: #cfe0fd; }
-.shell-nav-item.active svg { color: var(--accent); }
-.shell-nav-item svg { color: var(--text-subtle); flex-shrink: 0; }
-.shell-nav-item:hover svg { color: var(--text-muted); }
-
-.shell-logout {
-  display: flex;
-  align-items: center;
-  gap: 11px;
-  padding: 9px 11px;
-  margin-top: var(--space-3);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  background: transparent;
-  color: var(--text-muted);
-  font-size: 14px;
-  font-weight: 500;
-  font-family: inherit;
+  position: relative;
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 10px 8px 14px;
+  border-radius: var(--radius-sm);
+  color: var(--text-subtle);
+  font-size: 13px; font-weight: 500; letter-spacing: -0.005em;
+  transition: background var(--t-fast), color var(--t-base);
   cursor: pointer;
-  transition: background 0.13s ease, color 0.13s ease, border-color 0.13s ease;
+  text-decoration: none;
 }
-.shell-logout:hover { background: var(--danger-soft); color: #fca5a5; border-color: rgba(239,68,68,0.3); }
+.shell-nav-item::before {
+  content: '';
+  position: absolute; left: 3px; top: 50%;
+  transform: translateY(-50%) scaleY(0.3);
+  width: 3px; height: 18px;
+  border-radius: var(--radius-full);
+  background: var(--accent); opacity: 0;
+  transition: transform var(--t-base), opacity var(--t-base);
+}
+.shell-nav-item:hover { background: var(--surface-3); color: var(--text-muted); }
+.shell-nav-item.active { background: var(--accent-soft); color: var(--text); }
+.shell-nav-item.active::before { opacity: 1; transform: translateY(-50%) scaleY(1); }
+.shell-nav-item.active svg { color: var(--accent); }
+.shell-nav-item svg { color: var(--text-dim); flex-shrink: 0; transition: color var(--t-base); }
+.shell-nav-item:hover svg { color: var(--text-subtle); }
 
-/* ---------- Main ---------- */
+/* Logout */
+.shell-logout {
+  display: flex; align-items: center; gap: 10px;
+  padding: 12px 10px 12px 14px;
+  margin: 0 10px 12px;
+  border: none; border-radius: var(--radius-sm);
+  background: transparent; color: var(--text-subtle);
+  font-size: 13px; font-weight: 500; font-family: inherit;
+  cursor: pointer; transition: background var(--t-fast), color var(--t-base); text-align: left;
+}
+.shell-logout:hover { background: var(--danger-soft); color: var(--on-danger-soft); }
+.shell-logout:hover svg { color: var(--on-danger-soft); }
+.shell-logout svg { color: var(--text-dim); flex-shrink: 0; }
+
+/* ── Main area ────────────────────────────────────────────────────── */
 .shell-main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
 
+/* Primary topbar */
 .shell-topbar {
   height: var(--topbar-h);
   flex-shrink: 0;
+  display: flex; align-items: center; gap: var(--sp-3);
+  padding: 0 var(--sp-6);
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+  position: sticky; top: 0; z-index: 20;
+}
+:root[data-theme="dark"] .shell-topbar {
+  background: rgba(13, 20, 32, 0.92);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+.shell-title {
+  font-size: 15px; font-weight: 600;
+  letter-spacing: -0.02em; margin: 0; flex: 1;
+  color: var(--text); white-space: nowrap;
+  overflow: hidden; text-overflow: ellipsis;
+}
+.shell-topbar-right {
+  display: flex; align-items: center; gap: var(--sp-2); flex-shrink: 0;
+}
+
+/* Theme button */
+.shell-theme-btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 32px; height: 32px;
+  background: transparent; border: 1px solid var(--border-strong);
+  border-radius: var(--radius); color: var(--text-muted);
+  cursor: pointer; transition: background var(--t-base), color var(--t-base);
+}
+.shell-theme-btn:hover { background: var(--surface-3); color: var(--text); }
+
+/* ── Sub-navigation bar ───────────────────────────────────────────── */
+.shell-subnav {
   display: flex;
   align-items: center;
-  gap: var(--space-3);
-  padding: 0 var(--space-6);
+  gap: 0;
+  padding: 0 var(--sp-6);
   border-bottom: 1px solid var(--border);
-  background: rgba(11,15,20,0.7);
-  backdrop-filter: blur(8px);
+  background: var(--surface);
+  min-height: 42px;
+  flex-shrink: 0;
   position: sticky;
-  top: 0;
-  z-index: 20;
+  top: var(--topbar-h);
+  z-index: 19;
 }
-.shell-title { font-size: 18px; font-weight: 600; margin: 0; flex: 1; }
-.shell-topbar-right { display: flex; align-items: center; gap: var(--space-3); }
 
+.shell-subnav-label {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-subtle);
+  padding-right: 16px;
+  margin-right: 8px;
+  border-right: 1px solid var(--border);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.shell-subnav-links {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  overflow-x: auto;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.shell-subnav-links::-webkit-scrollbar { display: none; }
+
+.shell-subnav-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 0 14px;
+  height: 42px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-subtle);
+  text-decoration: none;
+  border-bottom: 2px solid transparent;
+  white-space: nowrap;
+  transition: color var(--t-base), border-color var(--t-base), background var(--t-fast);
+  letter-spacing: -0.005em;
+}
+.shell-subnav-link:hover {
+  color: var(--text-muted);
+  background: var(--surface-2);
+}
+.shell-subnav-link.active {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+}
+.shell-subnav-link svg { flex-shrink: 0; }
+
+/* Hamburger */
 .shell-hamburger {
-  display: none;
-  background: none; border: none; color: var(--text-muted); cursor: pointer; padding: 4px;
+  display: none; background: none; border: none;
+  color: var(--text-muted); cursor: pointer; padding: 4px;
+  border-radius: var(--radius-sm); transition: color var(--t-base);
 }
+.shell-hamburger:hover { color: var(--text); }
 
+/* Content */
 .shell-content {
   flex: 1;
-  padding: var(--space-6);
-  max-width: var(--content-max);
+  padding: var(--sp-6);
+  max-width: calc(var(--content-max) + var(--sp-6) * 2);
   width: 100%;
   margin: 0 auto;
 }
 
+/* Backdrop */
 .shell-backdrop {
-  display: none;
-  position: fixed; inset: 0;
-  background: rgba(0,0,0,0.5);
-  z-index: 40;
+  display: none; position: fixed; inset: 0;
+  background: rgba(2, 8, 18, 0.65); z-index: 29;
 }
 
-/* ---------- Responsive ---------- */
+/* ── Light theme ─────────────────────────────────────────────────── */
+:root[data-theme="light"] .shell-nav-item.active { color: var(--accent); }
+:root[data-theme="light"] .shell-nav-item.active svg { color: var(--accent); }
+:root[data-theme="light"] .shell-topbar { background: var(--surface); }
+:root[data-theme="light"] .shell-subnav { background: var(--surface); }
+
+/* ── Responsive ──────────────────────────────────────────────────── */
 @media (max-width: 900px) {
   .shell-sidebar {
-    position: fixed;
-    left: 0; top: 0;
-    z-index: 50;
+    position: fixed; left: 0; top: 0; z-index: 50;
     transform: translateX(-100%);
-    transition: transform 0.22s ease;
+    transition: transform 0.2s ease;
     box-shadow: var(--shadow-lg);
   }
   .shell-sidebar.open { transform: translateX(0); }
   .shell-backdrop { display: block; }
   .shell-hamburger { display: inline-flex; }
-  .shell-content { padding: var(--space-4); }
-  .shell-topbar { padding: 0 var(--space-4); }
+  .shell-content { padding: var(--sp-4); }
+  .shell-topbar { padding: 0 var(--sp-4); }
+  .shell-subnav { padding: 0 var(--sp-4); }
+  .shell-subnav-label { display: none; }
 }

@@ -1,0 +1,144 @@
+.rc-skeleton { height: 320px; border-radius: var(--radius-lg); }
+
+.rc-intro {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+.rc-intro-title { margin: 0 0 4px; font-size: 1.15rem; }
+.rc-intro-sub { margin: 0; font-size: 0.9rem; max-width: 62ch; }
+
+.rc-card { margin-bottom: 16px; }
+.rc-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+.rc-section-title { margin: 0; font-size: 1rem; font-weight: 600; }
+.rc-search { max-width: 260px; }
+
+/* ── Collapsible groups ─────────────────────────────────────────────── */
+.rc-group { border-top: 1px solid var(--border); }
+.rc-group:first-of-type { border-top: none; }
+
+.rc-group-head {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 2px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text);
+  font: inherit;
+  text-align: left;
+}
+.rc-group-head:hover { color: var(--accent); }
+.rc-group-name { font-weight: 600; font-size: 0.92rem; }
+.rc-group-count { margin-left: 2px; }
+.rc-group-arrow { margin-left: auto; color: var(--text-subtle); font-size: 1.1rem; }
+
+/* ── Field chips ────────────────────────────────────────────────────── */
+.rc-field-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  gap: 8px;
+  padding: 4px 0 14px;
+}
+
+.rc-field-chip {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  cursor: pointer;
+  text-align: left;
+  font: inherit;
+  color: var(--text);
+  transition: border-color .15s, background .15s;
+}
+.rc-field-chip:hover:not(.locked) { border-color: var(--accent-border); }
+.rc-field-chip.selected {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  color: var(--on-accent-soft);
+}
+.rc-field-chip.locked { opacity: .6; cursor: not-allowed; }
+
+.rc-check { font-size: 0.85rem; line-height: 1.4; flex-shrink: 0; }
+.rc-chip-text { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.rc-chip-label { font-size: 0.88rem; font-weight: 500; }
+.rc-chip-current {
+  font-size: 0.76rem;
+  color: var(--text-subtle);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ── Value editor ───────────────────────────────────────────────────── */
+.rc-editor { display: flex; flex-direction: column; gap: 10px; margin: 12px 0 16px; }
+
+.rc-editor-row {
+  display: grid;
+  grid-template-columns: 190px 1fr auto;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg);
+}
+.rc-editor-label { font-size: 0.88rem; font-weight: 600; display: flex; flex-direction: column; gap: 2px; }
+.rc-help { font-size: 0.74rem; font-weight: 400; color: var(--text-subtle); }
+
+.rc-editor-vals { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.rc-current { display: flex; align-items: baseline; gap: 6px; min-width: 150px; }
+.rc-val-label { font-size: 0.72rem; text-transform: uppercase; letter-spacing: .04em; color: var(--text-subtle); }
+.rc-val-value { font-size: 0.85rem; color: var(--text-muted); }
+.rc-new-input { flex: 1; min-width: 190px; }
+
+.rc-remove-btn {
+  background: none;
+  border: none;
+  color: var(--text-subtle);
+  cursor: pointer;
+  font-size: 0.95rem;
+  padding: 4px 6px;
+  border-radius: var(--radius-sm);
+}
+.rc-remove-btn:hover { color: var(--danger); background: var(--danger-soft); }
+
+.rc-submit-row { display: flex; justify-content: flex-end; gap: 10px; }
+
+/* ── History table ──────────────────────────────────────────────────── */
+.rc-hist-values { font-size: 0.85rem; }
+.rc-hist-old { color: var(--text-subtle); text-decoration: line-through; }
+.rc-hist-arrow { color: var(--text-subtle); }
+.rc-hist-new { color: var(--text); font-weight: 500; }
+
+.rc-withdraw {
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 4px 10px;
+  font-size: 0.78rem;
+  cursor: pointer;
+  color: var(--text-muted);
+}
+.rc-withdraw:hover { color: var(--danger); border-color: var(--danger); }
+
+@media (max-width: 720px) {
+  .rc-editor-row { grid-template-columns: 1fr auto; }
+  .rc-editor-vals { grid-column: 1 / -1; }
+  .rc-search { max-width: 100%; width: 100%; }
+}
